@@ -1,0 +1,228 @@
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-9">
+
+            <!-- Breadcrumb Navigation & Header -->
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <a href="{% if is_edit %}{% url 'product_detail' product.pk %}{% else %}{% url 'product_list' %}{% endif %}" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                        <span class="text-muted small">Products / {% if is_edit %}Edit{% else %}Create{% endif %}</span>
+                    </div>
+                    <h1 class="h3 fw-bold mb-0 text-dark">
+                        {% if is_edit %}Edit Product: {{ product.name }}{% else %}Add New Inventory Product{% endif %}
+                    </h1>
+                </div>
+
+                <a href="{% if is_edit %}{% url 'product_detail' product.pk %}{% else %}{% url 'product_list' %}{% endif %}" class="btn btn-outline-secondary btn-sm">
+                    Cancel & Return
+                </a>
+            </div>
+
+            <!-- Warning if no categories exist -->
+            {% if not categories_exist %}
+                <div class="alert alert-warning d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
+                        <div>
+                            <strong>No Categories Found:</strong> You need at least one category before assigning products.
+                        </div>
+                    </div>
+                    <a href="{% url 'category_list' %}" class="btn btn-sm btn-warning">Create Category First</a>
+                </div>
+            {% endif %}
+
+            <!-- Form Card -->
+            <div class="card-custom">
+                <div class="card-header bg-white">
+                    <h2 class="card-title">
+                        <i class="bi {% if is_edit %}bi-pencil-square text-primary{% else %}bi-plus-circle text-primary{% endif %}"></i>
+                        <span>{% if is_edit %}Update Product Specifications{% else %}Enter New Product Information{% endif %}</span>
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger shadow-sm">
+                                {% for error in form.non_field_errors %}
+                                    <div><i class="bi bi-x-circle me-1"></i> {{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Section 1: Basic Information -->
+                        <div class="mb-4">
+                            <h5 class="fw-semibold text-dark pb-2 border-bottom d-flex align-items-center gap-2">
+                                <i class="bi bi-info-circle text-primary"></i> 1. Basic Product Details
+                            </h5>
+                            
+                            <div class="row g-3 mt-1">
+                                <!-- Product Name -->
+                                <div class="col-12 col-md-8">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        Product Name <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Give the product a clear, descriptive name.</div>
+                                </div>
+
+                                <!-- SKU / Product ID -->
+                                <div class="col-12 col-md-4">
+                                    <label for="{{ form.sku.id_for_label }}" class="form-label">
+                                        SKU / Product ID <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.sku }}
+                                    {% if form.sku.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.sku.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Must be unique (e.g. ELEC-001).</div>
+                                </div>
+
+                                <!-- Category -->
+                                <div class="col-12 col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label for="{{ form.category.id_for_label }}" class="form-label mb-0">
+                                            Category <span class="text-danger">*</span>
+                                        </label>
+                                        <a href="{% url 'category_list' %}" target="_blank" class="small text-primary text-decoration-none">
+                                            + Add New Category
+                                        </a>
+                                    </div>
+                                    <div class="mt-1">
+                                        {{ form.category }}
+                                    </div>
+                                    {% if form.category.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.category.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Supplier Name -->
+                                <div class="col-12 col-md-6">
+                                    <label for="{{ form.supplier_name.id_for_label }}" class="form-label">
+                                        Supplier / Vendor Name <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.supplier_name }}
+                                    {% if form.supplier_name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.supplier_name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Description -->
+                                <div class="col-12">
+                                    <label for="{{ form.description.id_for_label }}" class="form-label">
+                                        Product Description
+                                    </label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.description.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Optional details, specs, color, dimensions, or warehouse notes.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Pricing and Stock Levels -->
+                        <div class="mb-4">
+                            <h5 class="fw-semibold text-dark pb-2 border-bottom d-flex align-items-center gap-2">
+                                <i class="bi bi-currency-dollar text-success"></i> 2. Pricing & Warehouse Inventory
+                            </h5>
+
+                            <div class="row g-3 mt-1">
+                                <!-- Purchase Price -->
+                                <div class="col-12 col-md-4">
+                                    <label for="{{ form.purchase_price.id_for_label }}" class="form-label">
+                                        Purchase Price (USD) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.purchase_price }}
+                                    </div>
+                                    {% if form.purchase_price.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.purchase_price.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Cost price paid to supplier.</div>
+                                </div>
+
+                                <!-- Selling Price -->
+                                <div class="col-12 col-md-4">
+                                    <label for="{{ form.selling_price.id_for_label }}" class="form-label">
+                                        Selling Price (USD) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.selling_price }}
+                                    </div>
+                                    {% if form.selling_price.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.selling_price.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Retail customer price.</div>
+                                </div>
+
+                                <!-- Stock Quantity -->
+                                <div class="col-12 col-md-4">
+                                    <label for="{{ form.stock_quantity.id_for_label }}" class="form-label">
+                                        Stock Quantity <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.stock_quantity }}
+                                    {% if form.stock_quantity.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.stock_quantity.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Number of items currently in inventory.</div>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-light rounded border mt-3 small text-muted d-flex align-items-center gap-2">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
+                                <div>
+                                    <strong>Inventory Rules:</strong> Items with stock &lt; 10 units will automatically trigger 
+                                    <strong>Low Stock alerts</strong>. Items with 0 units will be marked as <strong>Out of Stock</strong>.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Action Buttons -->
+                        <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                            <a href="{% if is_edit %}{% url 'product_detail' product.pk %}{% else %}{% url 'product_list' %}{% endif %}" class="btn btn-secondary px-4">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 d-flex align-items-center gap-2">
+                                <i class="bi {% if is_edit %}bi-check2-circle{% else %}bi-plus-lg{% endif %}"></i>
+                                <span>{% if is_edit %}Update Product Details{% else %}Save Product to Inventory{% endif %}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

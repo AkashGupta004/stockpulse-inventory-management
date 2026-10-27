@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional Inventory Management System with Python Django, SQLite, and Bootstrap 5.">
+    <title>{% if page_title %}{{ page_title }} | {% endif %}Inventory Management System</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <!-- Custom Inventory Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Mobile Sidebar Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="appSidebar">
+        <a href="{% url 'dashboard' %}" class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="bi bi-boxes"></i>
+            </div>
+            <div>
+                <span style="letter-spacing: -0.02em;">StockPulse</span>
+                <span class="d-block text-secondary small fw-normal" style="font-size: 0.72rem; line-height: 1;">Inventory Manager</span>
+            </div>
+        </a>
+
+        <div class="sidebar-nav">
+            <div class="nav-section-title">Core Navigation</div>
+            
+            <a href="{% url 'dashboard' %}" class="nav-link {% if active_menu == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{% url 'product_list' %}" class="nav-link {% if active_menu == 'products' %}active{% endif %}">
+                <i class="bi bi-box-seam-fill"></i>
+                <span>All Products</span>
+            </a>
+
+            <a href="{% url 'product_create' %}" class="nav-link {% if active_menu == 'add_product' %}active{% endif %}">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Add Product</span>
+            </a>
+
+            <div class="nav-section-title">Organization & Alerts</div>
+
+            <a href="{% url 'category_list' %}" class="nav-link {% if active_menu == 'categories' %}active{% endif %}">
+                <i class="bi bi-tags-fill"></i>
+                <span>Categories</span>
+            </a>
+
+            <a href="{% url 'product_list' %}?status=low_stock" class="nav-link">
+                <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                <span>Low Stock Items</span>
+            </a>
+
+            <a href="{% url 'product_list' %}?status=out_of_stock" class="nav-link">
+                <i class="bi bi-x-circle-fill text-danger"></i>
+                <span>Out of Stock</span>
+            </a>
+
+            <div class="nav-section-title">Administration</div>
+
+            <a href="/admin/" target="_blank" class="nav-link">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>Django Admin <i class="bi bi-box-arrow-up-right ms-auto small text-muted"></i></span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="fw-semibold text-white d-block">SQLite Engine</span>
+                    <span class="small">Django 6.1 • Active</span>
+                </div>
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <!-- Left Header: Navigation / Breadcrumb -->
+            <div class="header-left-section">
+                <button class="btn btn-outline-secondary d-lg-none py-1 px-2" type="button" onclick="toggleSidebar()" aria-label="Toggle navigation">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <div class="d-none d-md-flex align-items-center text-muted small">
+                    <i class="bi bi-house-door me-1 text-primary"></i>
+                    <a href="{% url 'dashboard' %}" class="text-decoration-none text-muted">Home</a>
+                    {% if page_title %}
+                        <span class="mx-2">/</span>
+                        <span class="text-dark fw-medium">{{ page_title }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Center Header: Inventory Management System Heading -->
+            <div class="header-center-section">
+                <h1 class="header-main-heading">
+                    <span class="heading-highlight">Inventory Management System</span>
+                </h1>
+                <span class="header-sub-heading">Indian Institute of Technology Kharagpur</span>
+            </div>
+
+            <!-- Right Header: IIT KGP Logo Top Corner -->
+            <div class="header-right-section">
+                <a href="https://www.iitkgp.ac.in/" target="_blank" rel="noopener noreferrer" class="header-iit-brand" title="Indian Institute of Technology Kharagpur">
+                    <div class="text-end d-none d-sm-block">
+                        <div class="iit-brand-title">IIT Kharagpur</div>
+                        <div class="iit-brand-sub">Est. 1951</div>
+                    </div>
+                    <img src="{% static 'images/iit_kgp_logo.svg' %}" alt="IIT Kharagpur Official Logo" class="iit-header-logo">
+                </a>
+            </div>
+        </header>
+
+        <!-- Notification Messages Container -->
+        <div class="container-fluid px-4 pt-3">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm d-flex align-items-center gap-2 mb-3" role="alert">
+                        {% if message.tags == 'success' %}
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        {% elif message.tags == 'danger' or message.tags == 'error' %}
+                            <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <!-- Footer with Official IIT KGP Address -->
+        <footer class="footer-kgp mt-auto">
+            <div class="container-fluid px-4 py-4">
+                <div class="row g-4 align-items-center">
+                    <!-- Left: IIT KGP Address & Details -->
+                    <div class="col-12 col-lg-7">
+                        <div class="d-flex align-items-start gap-3">
+                            <a href="https://www.iitkgp.ac.in" target="_blank" rel="noopener noreferrer" title="IIT Kharagpur Official Website">
+                                <img src="{% static 'images/iit_kgp_logo.svg' %}" alt="IIT Kharagpur Emblem" class="footer-iit-logo">
+                            </a>
+                            <div>
+                                <h5 class="footer-institute-name mb-1">Indian Institute of Technology Kharagpur</h5>
+                                <p class="footer-address mb-2">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                    <strong>Address:</strong> Kharagpur, Paschim Medinipur, West Bengal - 721302, India
+                                </p>
+                                <div class="footer-contacts small flex-wrap gap-3 d-flex">
+                                    <span><i class="bi bi-telephone-fill text-primary me-1"></i> +91-3222-255221</span>
+                                    <span><i class="bi bi-envelope-fill text-primary me-1"></i> registrar@hijli.iitkgp.ac.in</span>
+                                    <span><i class="bi bi-globe me-1 text-primary"></i> <a href="https://www.iitkgp.ac.in" target="_blank" class="footer-link">www.iitkgp.ac.in</a></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Developer Profile & Details (Right Bottom Corner) -->
+                    <div class="col-12 col-lg-5 text-lg-end">
+                        <div class="d-flex align-items-center justify-content-lg-end justify-content-start gap-3">
+                            <div class="text-lg-end text-start">
+                                <div class="mb-1">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                                        <i class="bi bi-code-slash me-1"></i> Developer & Administrator
+                                    </span>
+                                </div>
+                                <div class="text-white fw-bold fs-6 mb-1">
+                                    Akash Gupta
+                                </div>
+                                <div class="small mb-1">
+                                    <a href="tel:7692913647" class="text-decoration-none text-light d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-telephone-fill text-primary"></i>
+                                        <span class="fw-medium">+91 76929 13647</span>
+                                    </a>
+                                </div>
+                                <p class="small text-muted mb-0">
+                                    &copy; 2026 IIT Kharagpur. All Rights Reserved.
+                                </p>
+                            </div>
+                            <div class="footer-profile-wrapper" title="Developer: Akash Gupta">
+                                <img src="{% static 'images/profile_pic.jpeg' %}" alt="Akash Gupta - Developer" class="footer-profile-pic">
+                                <span class="profile-online-badge" title="Active Developer"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Floating Profile Avatar in the Right Bottom Corner of Viewport -->
+        <div class="floating-profile-corner d-none d-md-flex align-items-center" title="Developer: Akash Gupta • Phone: 7692913647">
+            <img src="{% static 'images/profile_pic.jpeg' %}" alt="Akash Gupta" class="floating-profile-img">
+            <div class="d-flex flex-column text-start me-1">
+                <span class="floating-profile-text">Akash Gupta</span>
+                <a href="tel:7692913647" class="floating-profile-phone text-decoration-none">
+                    <i class="bi bi-telephone-fill me-1"></i>7692913647
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5.3 Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Mobile Sidebar Script -->
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        if (sidebar && backdrop) {
+            sidebar.classList.toggle('show');
+            backdrop.classList.toggle('show');
+        }
+    }
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

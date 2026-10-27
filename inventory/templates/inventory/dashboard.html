@@ -1,0 +1,277 @@
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <!-- Dashboard Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="letter-spacing: -0.02em;">Inventory Dashboard</h1>
+            <p class="text-muted mb-0">Overview of warehouse stock levels, total valuation, and product activities.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'product_create' %}" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add Product</span>
+            </a>
+            <a href="{% url 'category_list' %}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+                <i class="bi bi-tags"></i>
+                <span>Categories</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="row g-3 mb-4">
+        <!-- Metric 1: Total Products -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-primary">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Total Products</div>
+                        <div class="stat-value">{{ total_products }}</div>
+                        <p class="stat-subtext">Across {{ total_categories }} categories</p>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-primary">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">Active Catalog</span>
+                    <a href="{% url 'product_list' %}" class="small text-primary fw-medium text-decoration-none">View All <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric 2: Total Inventory Value -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-success">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Total Inventory Value</div>
+                        <div class="stat-value">${{ total_inventory_value|floatformat:2 }}</div>
+                        <p class="stat-subtext">{{ total_items_in_stock }} total units in stock</p>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-success">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">Purchase Cost Basis</span>
+                    <span class="small text-success fw-medium">Est. Sales: ${{ total_potential_revenue|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric 3: Low Stock Alert -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-warning">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Low Stock Items</div>
+                        <div class="stat-value text-warning">{{ low_stock_count }}</div>
+                        <p class="stat-subtext">Stock &lt; 10 units threshold</p>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">Needs replenishment</span>
+                    <a href="{% url 'product_list' %}?status=low_stock" class="small text-warning fw-semibold text-decoration-none">Filter Low Stock <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric 4: Out of Stock -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-danger">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Out of Stock</div>
+                        <div class="stat-value text-danger">{{ out_of_stock_count }}</div>
+                        <p class="stat-subtext">Immediate reorder required</p>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-danger">
+                        <i class="bi bi-slash-circle"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">Zero units remaining</span>
+                    <a href="{% url 'product_list' %}?status=out_of_stock" class="small text-danger fw-semibold text-decoration-none">View Out-of-Stock <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Two-Column Layout -->
+    <div class="row g-4">
+        <!-- Left: Recently Added Products Table -->
+        <div class="col-12 col-lg-8">
+            <div class="card-custom">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="bi bi-clock-history text-primary"></i>
+                        <span>Recently Added Products</span>
+                    </h2>
+                    <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-secondary">
+                        View Complete Catalog <i class="bi bi-chevron-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_products %}
+                        <div class="table-responsive">
+                            <table class="table table-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>SKU</th>
+                                        <th>Category</th>
+                                        <th class="text-end">Selling Price</th>
+                                        <th class="text-center">Stock</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in recent_products %}
+                                        <tr class="{% if product.is_out_of_stock %}row-out-of-stock{% elif product.is_low_stock %}row-low-stock{% endif %}">
+                                            <td>
+                                                <a href="{% url 'product_detail' product.pk %}" class="fw-semibold text-decoration-none text-dark d-block">
+                                                    {{ product.name }}
+                                                </a>
+                                                <span class="text-muted small">{{ product.supplier_name }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge-sku">{{ product.sku }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">{{ product.category.name }}</span>
+                                            </td>
+                                            <td class="text-end fw-semibold">
+                                                ${{ product.selling_price|floatformat:2 }}
+                                            </td>
+                                            <td class="text-center fw-bold">
+                                                {{ product.stock_quantity }}
+                                            </td>
+                                            <td>
+                                                <span class="badge-status {{ product.stock_badge_class }}">
+                                                    <span class="badge-dot"></span>
+                                                    {{ product.stock_status }}
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{% url 'product_detail' product.pk %}" class="btn btn-outline-secondary" title="View details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'product_edit' product.pk %}" class="btn btn-outline-secondary" title="Edit product">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-box-seam display-4 text-muted mb-3 d-block"></i>
+                            <h5 class="fw-semibold">No products registered yet</h5>
+                            <p class="text-muted">Start by adding your first product to track inventory metrics.</p>
+                            <a href="{% url 'product_create' %}" class="btn btn-primary mt-2">
+                                <i class="bi bi-plus-lg me-1"></i> Add First Product
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Urgent Stock Alerts & Category Breakdown -->
+        <div class="col-12 col-lg-4">
+            <!-- Urgent Reorder Card -->
+            <div class="card-custom mb-4">
+                <div class="card-header bg-white">
+                    <h2 class="card-title text-warning">
+                        <i class="bi bi-bell-fill"></i>
+                        <span>Urgent Reorder Alert</span>
+                    </h2>
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                        {{ low_stock_count|add:out_of_stock_count }} Items
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    {% if urgent_reorders %}
+                        <ul class="list-group list-group-flush">
+                            {% for item in urgent_reorders %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-3">
+                                    <div class="me-2">
+                                        <a href="{% url 'product_detail' item.pk %}" class="fw-semibold text-dark text-decoration-none d-block text-truncate" style="max-width: 200px;">
+                                            {{ item.name }}
+                                        </a>
+                                        <div class="small text-muted">
+                                            SKU: <span class="badge-sku py-0 px-1">{{ item.sku }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge {% if item.is_out_of_stock %}bg-danger{% else %}bg-warning text-dark{% endif %} rounded-pill px-2 py-1">
+                                            {{ item.stock_quantity }} in stock
+                                        </span>
+                                        <a href="{% url 'product_edit' item.pk %}" class="d-block small text-primary text-decoration-none mt-1">
+                                            Restock <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="p-4 text-center text-muted">
+                            <i class="bi bi-check-circle-fill text-success fs-1 mb-2 d-block"></i>
+                            <p class="mb-0 fw-medium">All items are well stocked!</p>
+                            <span class="small">No products currently below 10 units.</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Categories Summary Card -->
+            <div class="card-custom">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="bi bi-folder2-open text-primary"></i>
+                        <span>Category Breakdown</span>
+                    </h2>
+                    <a href="{% url 'category_list' %}" class="small text-decoration-none">Manage</a>
+                </div>
+                <div class="card-body">
+                    {% if categories_summary %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for cat in categories_summary %}
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <a href="{% url 'product_list' %}?category={{ cat.pk }}" class="text-decoration-none text-dark fw-medium small">
+                                            {{ cat.name }}
+                                        </a>
+                                        <span class="badge bg-light text-dark border">{{ cat.num_products }} items</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {% widthratio cat.num_products total_products 100 %}%;" 
+                                             aria-valuenow="{{ cat.num_products }}" aria-valuemin="0" aria-valuemax="{{ total_products }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted small mb-0 text-center">No categories created yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

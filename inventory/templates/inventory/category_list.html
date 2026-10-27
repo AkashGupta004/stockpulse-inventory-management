@@ -1,0 +1,149 @@
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <!-- Header Row -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="letter-spacing: -0.02em;">Category Management</h1>
+            <p class="text-muted mb-0">Organize and group products into structured warehouse categories.</p>
+        </div>
+        <div>
+            <a href="{% url 'product_create' %}" class="btn btn-outline-primary d-flex align-items-center gap-2">
+                <i class="bi bi-box-seam"></i>
+                <span>Add Product</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left: Categories Data Table -->
+        <div class="col-12 col-lg-7">
+            <div class="card-custom">
+                <div class="card-header bg-white">
+                    <h2 class="card-title">
+                        <i class="bi bi-tags-fill text-primary"></i>
+                        <span>Existing Categories ({{ categories.count }})</span>
+                    </h2>
+                </div>
+                <div class="card-body p-0">
+                    {% if categories %}
+                        <div class="table-responsive">
+                            <table class="table table-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Category Name</th>
+                                        <th>Description</th>
+                                        <th class="text-center">Products</th>
+                                        <th class="text-end" style="width: 140px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cat in categories %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'product_list' %}?category={{ cat.pk }}" class="fw-bold text-dark text-decoration-none">
+                                                    {{ cat.name }}
+                                                </a>
+                                            </td>
+                                            <td class="text-muted small">
+                                                {{ cat.description|default:"—"|truncatechars:60 }}
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{% url 'product_list' %}?category={{ cat.pk }}" class="badge bg-primary-subtle text-primary border border-primary-subtle text-decoration-none px-2 py-1">
+                                                    {{ cat.product_count_annotated }} items
+                                                </a>
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{% url 'product_list' %}?category={{ cat.pk }}" class="btn btn-outline-secondary" title="View products in this category">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'category_edit' cat.pk %}" class="btn btn-outline-secondary" title="Edit category">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a href="{% url 'category_delete' cat.pk %}" class="btn btn-outline-danger" title="Delete category">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-folder-x display-4 text-muted mb-3 d-block"></i>
+                            <h5 class="fw-semibold">No categories registered</h5>
+                            <p class="text-muted">Create your first category using the form on the right.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Add New Category Form Card -->
+        <div class="col-12 col-lg-5">
+            <div class="card-custom">
+                <div class="card-header bg-white">
+                    <h2 class="card-title">
+                        <i class="bi bi-plus-circle text-primary"></i>
+                        <span>Create New Category</span>
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger shadow-sm">
+                                {% for error in form.non_field_errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Category Name -->
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                Category Name <span class="text-danger">*</span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Must be unique (e.g. Hardware, Furniture).</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                Description
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.description.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Optional notes or classification summary.</div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-plus-lg"></i>
+                                <span>Save Category</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

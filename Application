@@ -1,0 +1,34 @@
+# ==============================================================================
+# StockPulse - Inventory Management System
+# Built with Python Django, SQLite, HTML5, CSS3, and Bootstrap 5
+# ==============================================================================
+#
+# QUICK START GUIDE:
+# ------------------
+# 1. Open your terminal in the project directory:
+#    cd stockpulse-inventory-management
+#
+# 2. Activate the virtual environment:
+#    .\venv\Scripts\activate
+#
+# 3. Start the Django development server:
+#    python manage.py runserver
+#
+# 4. Open your browser and go to:
+#    - Dashboard:     http://127.0.0.1:8000/
+#    - Products:      http://127.0.0.1:8000/products/
+#    - Add Product:   http://127.0.0.1:8000/products/add/
+#    - Categories:    http://127.0.0.1:8000/categories/
+#    - Django Admin:  http://127.0.0.1:8000/admin/
+#
+# DEFAULT SUPERUSER (DJANGO ADMIN):
+# ---------------------------------
+# Username: admin
+# Password: admin123
+#
+# TO RUN TESTS:
+# -------------
+# python manage.py test
+#
+# (Refer to README.md in this folder for complete details and architecture)
+# ==============================================================================
